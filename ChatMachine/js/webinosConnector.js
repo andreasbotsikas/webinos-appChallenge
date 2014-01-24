@@ -216,7 +216,7 @@ webinosConnector = function (applicationName) {
                     select: "devices"
                 }
             }).onAction(function (data) {
-                if (typeof localStorage != "undefined") {
+                if (typeof localStorage != "undefined" && data.result.length == 1) {
                     localStorage.setItem("eventsApi_zoneId", data.result[0].id);
                 }
                 currentEventsApiZoneId = data.result[0].id;

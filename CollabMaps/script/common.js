@@ -13,7 +13,7 @@ $(document).ready(function() {
 				select: "devices"
 			}
 		}).onAction(function (data) {
-			if (typeof localStorage != "undefined") {
+			if (typeof localStorage != "undefined" && data.result.length == 1) {
 				localStorage.setItem("app2appApi_zoneId", data.result[0].id);
 			}
 		});
