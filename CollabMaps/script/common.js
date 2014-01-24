@@ -4,6 +4,20 @@ $(document).ready(function() {
     }).click(function() {
         StreetViewer.addMarker();
     });
+	
+	$("#cmdSelectApp2App").click(function(){
+	  webinos.dashboard.open({
+			module: 'explorer',
+			data: {
+				service: ['http://webinos.org/api/app2app'],
+				select: "devices"
+			}
+		}).onAction(function (data) {
+			if (typeof localStorage != "undefined") {
+				localStorage.setItem("app2appApi_zoneId", data.result[0].id);
+			}
+		});
+	});
 
     $("#dlg_login").dialog({
         autoOpen: true,

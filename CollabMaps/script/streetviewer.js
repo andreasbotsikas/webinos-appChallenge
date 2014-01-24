@@ -76,6 +76,12 @@ StreetViewer.init = function(hostorguest, callback, channelid) {
     //TODO: check these...
     var zoneId;
     var partyAddress = null;
+	
+	if (typeof localStorage != "undefined" && localStorage.getItem("app2appApi_zoneId")!=null) {
+		zoneId = {
+			zoneId: [localStorage.getItem("app2appApi_zoneId")]
+		};
+	}
 
     webinos.discovery.findServices(new ServiceType("http://webinos.org/api/app2app"), {
         /**
