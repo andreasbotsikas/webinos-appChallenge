@@ -5,8 +5,6 @@ $(document).ready(function() {
         StreetViewer.addMarker();
     });
 
-    webinosInjector.inject();
-
     $("#dlg_login").dialog({
         autoOpen: true,
         draggable: true,

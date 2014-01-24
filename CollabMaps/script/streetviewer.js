@@ -84,22 +84,20 @@ StreetViewer.init = function(hostorguest, callback, channelid) {
          * @private
          */
         onFound: function(service) {
-            webinosInjector.onServiceHasLoaded(service, function() {
-                // if the found service is not the service we are looking for...
-                if (self.channel) {
-                    return; // already connected to a service
-                } else if (!partyAddress && service.serviceAddress != webinos.session.getPZHId()) {
-                    return; // we are looking for a service within our own personal zone
-                } else if (partyAddress && service.serviceAddress.indexOf(partyAddress) === -1) {
-                    return; // we are looking for a specific service and this is not it
-                } else {
-                    service.bindService({
-                        onBind: function() {
-                            connect(service);
-                        }
-                    });
-                }
-            });
+			// if the found service is not the service we are looking for...
+			if (self.channel) {
+				return; // already connected to a service
+			} else if (!partyAddress && service.serviceAddress != webinos.session.getPZHId()) {
+				return; // we are looking for a service within our own personal zone
+			} else if (partyAddress && service.serviceAddress.indexOf(partyAddress) === -1) {
+				return; // we are looking for a specific service and this is not it
+			} else {
+				service.bindService({
+					onBind: function() {
+						connect(service);
+					}
+				});
+			}
         },
         /**
          * When an error occurs.
