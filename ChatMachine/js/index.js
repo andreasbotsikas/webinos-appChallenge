@@ -6,6 +6,7 @@ function initilizeConnector(){
         switch (state) {
             case myConnector.STATE.PZH_ONLINE:
                 $("#connectionStatus").text("You are connected.");
+                $("#SelectedEventServer").text(myConnector.getEventsZone());
                 goOnline();
                 break;
             case myConnector.STATE.PZH_OFFLINE:
@@ -63,6 +64,10 @@ function initilizeConnector(){
         console.log("message");
         console.log(data);
         showMessage(data.data.nickname, data.data.email, "> " + data.data.msg);
+    });
+
+    $("#cmdSelectEventServer").click(function () {
+        myConnector.promptForEvents();
     });
 }
 

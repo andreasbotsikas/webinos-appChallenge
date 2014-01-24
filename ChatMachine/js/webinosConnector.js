@@ -1,20 +1,20 @@
 webinosConnector = function (applicationName) {
-    var connectedDevices = {pzh:{},pzp:{},myPzp:{}};
-    this.getConnectedDevices = function (){
+    var connectedDevices = { pzh: {}, pzp: {}, myPzp: {} };
+    this.getConnectedDevices = function () {
         return connectedDevices;
     };
     var that = this;
     var connectorState = 0;
     this.STATE = {
-        ERROR:-1,
-        INIT:0,
-        VIRGIN:1,
-        PZH_OFFLINE:2,
-        PZH_ONLINE:3
+        ERROR: -1,
+        INIT: 0,
+        VIRGIN: 1,
+        PZH_OFFLINE: 2,
+        PZH_ONLINE: 3
     };
     var internalEventType = {};
     var connectorServices = {
-        events:{listenerId:null, service:null, id: null}
+        events: { listenerId: null, service: null, id: null }
     };
 
     var triggerEvent = function (event, paramArray) {
@@ -53,11 +53,11 @@ webinosConnector = function (applicationName) {
         return result;
     };
     var eventReceived = function (event) {
-        switch (event.type){
+        switch (event.type) {
             case internalEventType.ping:
                 if (event.addressing.source.id === connectorServices.events.service.myAppID) {
                     ponged(event.payload, event.addressing.source.id);
-                }else{
+                } else {
                     pong(event.payload);
                 }
                 return;
@@ -70,16 +70,16 @@ webinosConnector = function (applicationName) {
             case internalEventType.hello:
                 that.ping();
                 break;
-            default :
+            default:
                 if (event.addressing.source.id === connectorServices.events.service.myAppID) {
                     return;
-                }else{
+                } else {
                     console.log('new event:');
                     console.log(event);
                     var e = {
-                        from : event.addressing.source.id,
-                        self : (event.addressing.source.id === connectorServices.events.service.myAppID) ? true : false,
-                        data : event.payload
+                        from: event.addressing.source.id,
+                        self: (event.addressing.source.id === connectorServices.events.service.myAppID) ? true : false,
+                        data: event.payload
                     };
                     triggerEvent('_event_' + event.type, e);
                 }
@@ -105,19 +105,19 @@ webinosConnector = function (applicationName) {
     };
 
     var myPing = {
-        pings : {}
+        pings: {}
     };
-    this.ping = function (){
+    this.ping = function () {
         if (this.getState() != this.STATE.PZH_ONLINE) return false;
-        var id = hash(''+Math.random());
+        var id = hash('' + Math.random());
         var ev = connectorServices.events.service.createWebinosEvent();
         ev.type = internalEventType.ping;
         ev.payload = id;
-        myPing.pings[id] = {resp:{}, timeSend: Date.now()};
+        myPing.pings[id] = { resp: {}, timeSend: Date.now() };
         ev.dispatchWebinosEvent();
         return true;
     };
-    var pong = function(id){
+    var pong = function (id) {
         if (that.getState() != that.STATE.PZH_ONLINE) return false;
         var ev = connectorServices.events.service.createWebinosEvent();
         ev.type = internalEventType.pong;
@@ -125,93 +125,123 @@ webinosConnector = function (applicationName) {
         ev.dispatchWebinosEvent();
         return true;
     };
-    var ponged = function(id, from){
+    var ponged = function (id, from) {
         if (myPing.pings[id] == undefined) return;
         var now = Date.now();
-        var time = now-myPing.pings[id].timeSend;
+        var time = now - myPing.pings[id].timeSend;
         myPing.pings[id].resp[from] = {
-            from:from,
-            reply:now,
-            time:time
+            from: from,
+            reply: now,
+            time: time
         };
         checkDevice(from, time);
-        triggerEvent("pinged",{device:from, time: time});
+        triggerEvent("pinged", { device: from, time: time });
     };
-    var checkDevice = function(name, ping){
+    var checkDevice = function (name, ping) {
         var connectedRegex = /([A-Za-z0-9\-\_\.]+)\/([A-Za-z0-9\-\_\.]+)(?:\/)?(.+)?/;
-        if(nameParts = name.match(connectedRegex)){
-//            name = nameParts[1]+"/"+nameParts[2];
+        if (nameParts = name.match(connectedRegex)) {
+            //            name = nameParts[1]+"/"+nameParts[2];
             var newone = (connectedDevices.pzp[name] == null);
-            connectedDevices.pzp[name] = {ping:ping};
-            if (newone){
+            connectedDevices.pzp[name] = { ping: ping };
+            if (newone) {
                 triggerEvent("newDevice", name);
             }
         }
     };
-    var hello = function(resp){
+    var hello = function (resp) {
         if (that.getState() != that.STATE.PZH_ONLINE) return false;
         var ev = connectorServices.events.service.createWebinosEvent();
         ev.type = internalEventType.hello;
-        ev.payload = resp?"hi":"hello";
+        ev.payload = resp ? "hi" : "hello";
         ev.dispatchWebinosEvent();
         return true;
     };
 
     var internalEventType = {
-        ping : preventCollision('_ping_'),
-        pong : preventCollision('_pong_'),
-        hello : preventCollision('_hello_')
+        ping: preventCollision('_ping_'),
+        pong: preventCollision('_pong_'),
+        hello: preventCollision('_hello_')
     };
 
+    var currentEventsApiZoneId = null;
+    this.getEventsZone = function () {
+        return currentEventsApiZoneId;
+    }
+    this.promptForEvents = function () {
+        currentEventsApiZoneId = null;
+        if (typeof localStorage != "undefined") {
+            localStorage.removeItem("eventsApi_zoneId");
+        }
+        findEventsAPI();
+    };
     var findEventsAPI = function () {
-        webinos.ServiceDiscovery.findServices(
-            new ServiceType('http://webinos.org/api/events'),
-            {
-                onFound:function (service) {
-//                    console.log('recent events API found: ' + service.api + ' @ ' + service.serviceAddress);
-
-                    service.bind({
-                        onBind: function (service){
-                            connectorServices.events.service = service;
-                            if (connectorServices.events.listenerId != null){
-                                service.removeWebinosEventListener(connectorServices.events.listenerId);
-//                                connectorServices.events.listenerId = null;
-//                                connectorServices.events.service = null;
-//                                connectorServices.events.id = null;
-                            }
-                            connectorServices.events.listenerId = connectorServices.events.service.addWebinosEventListener(eventReceived);
-                            if (that.getState() != that.STATE.PZH_ONLINE){
-                                setState(that.STATE.PZH_ONLINE);
-                                hello();
-                            }
-                            triggerEvent("eventsBound", service);
-                        }
-                    });
-                },
-                onError:function (error) {
-                    setState(that.STATE.ERROR);
-                    connectorServices.events = null;
-                }
+        if (currentEventsApiZoneId != null || (typeof localStorage != "undefined" && localStorage.getItem("eventsApi_zoneId") != null)) {
+            if (typeof localStorage != "undefined") {
+                currentEventsApiZoneId = localStorage.getItem("eventsApi_zoneId");
             }
-        );
+            webinos.ServiceDiscovery.findServices(
+                new ServiceType('http://webinos.org/api/events'),
+                {
+                    onFound: function (service) {
+                        service.bind({
+                            onBind: function (service) {
+                                connectorServices.events.service = service;
+                                if (connectorServices.events.listenerId != null) {
+                                    service.removeWebinosEventListener(connectorServices.events.listenerId);
+                                }
+                                connectorServices.events.listenerId = connectorServices.events.service.addWebinosEventListener(eventReceived);
+                                if (that.getState() != that.STATE.PZH_ONLINE) {
+                                    setState(that.STATE.PZH_ONLINE);
+                                    hello();
+                                }
+                                triggerEvent("eventsBound", service);
+                            }
+                        });
+                    },
+                    onError: function (error) {
+                        setState(that.STATE.ERROR);
+                        connectorServices.events = null;
+                    }
+                },
+                {},
+                {
+                    zoneId: [currentEventsApiZoneId]
+                }
+             );
+        } else { // Prompt dashboard to select events api
+            webinos.dashboard.open({
+                module: 'explorer',
+                data: {
+                    service: ['http://webinos.org/api/events'],
+                    select: "devices"
+                }
+            }).onAction(function (data) {
+                if (typeof localStorage != "undefined") {
+                    localStorage.setItem("eventsApi_zoneId", data.result[0].id);
+                }
+                currentEventsApiZoneId = data.result[0].id;
+                findEventsAPI();
+            });
+
+        }
     };
 
     setState(that.STATE.INIT);
     webinos.session.addListener('registeredBrowser', function (data) {
-//        setState(that.STATE.CONNECTED_PZP);
+        //        setState(that.STATE.CONNECTED_PZP);
         connectedDevices.myPzp = data.from;
-        if (!data.payload.message.enrolled){
+        if (!data.payload.message.enrolled) {
             connectorServices.events = null;
             setState(that.STATE.VIRGIN);
-        }else if (data.payload.message.state.Pzh !== "connected"){
+        } else if (data.payload.message.state.Pzh !== "connected") {
             connectorServices.events = null;
             setState(that.STATE.PZH_OFFLINE);
-        }else {
+        } else {
             findEventsAPI();
         }
         triggerEvent("registeredBrowser", data);
-//        if (!firstTime) return;
-//        firstTime = false;
-//        findServiceDevices('events', 'http://webinos.org/api/events');
+        //        if (!firstTime) return;
+        //        firstTime = false;
+        //        findServiceDevices('events', 'http://webinos.org/api/events');
     });
 };
