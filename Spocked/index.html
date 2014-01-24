@@ -38,7 +38,8 @@
 		
 		// Create new settings object with desired properties
 		rpsls = {
-			name:''
+			name:'',
+			app2appZoneId: null
 		};
 
 		// Extend object with values from localStorage (if a save exists)
@@ -288,6 +289,7 @@
 			// Load old name in name edit window
 			$('#options').on("pageshow", function() {
 				$('#options_name').val(rpsls.name);
+				$("#SelectedServer").text(rpsls.app2appZoneId);
 			});
 			
 			// Enter name in options page
@@ -300,6 +302,21 @@
 					rpsls.save();
 					$.mobile.changePage('#main')
 				}
+			});
+			
+			$('#cmdSelectServer').click(function(){
+			    webinos.dashboard.open({
+					module: 'explorer',
+					data: {
+						service: ['http://webinos.org/api/app2app'],
+						select: "devices"
+					}
+				}).onAction(function (data) {
+					if (data.result.length == 1) {
+					   rpsls.app2appZoneId = data.result[0].id;
+					   $("#SelectedServer").text(rpsls.app2appZoneId);
+					}
+				});
 			});
 			
 			// stop listening to channel when on main screen and say "bye" to everyone that is listening
@@ -412,11 +429,12 @@
 			var config = {namespace: channelNamespace, properties: {mode:"send-receive", reclaimIfExists:true}, appInfo: {}};
 			webinosApp2App.createChannel(
                     config,
+					null, // No request callback so that channel doesn't block
                     // callback invoked when a client want to connect to the channel
-                    function(request) {
+                    //function(request) {
                         // we allow all clients to connect
-                        return true;
-                    },
+                    //    return true;
+                    //},
 					// callback invoked to receive messages
                     function(message) {
                         console.log("The host received a message: " + message.contents);
@@ -624,6 +642,12 @@
         }
 
         function pageLaunch() {
+			var zoneId = null;
+			if (rpsls.app2appZoneId){ // If user specified a zone
+				zoneId = {
+					zoneId: [rpsls.app2appZoneId]
+				};
+			}
             webinos.discovery.findServices(new ServiceType("http://webinos.org/api/app2app"), {
                 onFound:function (service) {
                     // If this is the local pzh
@@ -637,9 +661,8 @@
                 }, onError:function (error) {
                     console.log("Error: " + error.message + " (Code: #" + error.code + ")");
                 }
-            });
+            }, null, zoneId);
         };
-
 		
 		$(window).load(function(){
 			initWebinos();
@@ -824,6 +847,12 @@
                             Name
                         </label>
                         <input name="" id="options_name" placeholder="Type your name" value="" type="text" />
+                    </fieldset>
+					<fieldset data-role="controlgroup">
+                        <label for="cmdSelectEventServer">
+                           (Optional) Select zone: <span id="SelectedServer"></span>. You will need to restart after saving, for this setting to take effect.
+                        </label><br/>
+                        <input type="button" id="cmdSelectServer" value="Select server" />
                     </fieldset>
                 </div>
                 <input type="submit" id="options_accept" value="Accept" />
