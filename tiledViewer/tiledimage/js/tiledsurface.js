@@ -4,22 +4,22 @@
 var tiledSurface = {
 
     /**
-     * The state of the current tile.
-     */
-    Status : {
-        ERROR : 0,
-        IDLE : 1,
-        LOGIN : 2,
-        CONNECTING : 3,
-        PAIRING : 4,
+    * The state of the current tile.
+    */
+    Status: {
+        ERROR: 0,
+        IDLE: 1,
+        LOGIN: 2,
+        CONNECTING: 3,
+        PAIRING: 4,
         RECONFIGURING: 5,
-        RUNNING : 6
+        RUNNING: 6
     },
 
     /**
-     * Initializes the tile.
-     */
-    initialize : function() {
+    * Initializes the tile.
+    */
+    initialize: function () {
         // initialize the tile
         this.canvas = $("#pairing_canvas");
         this.adjustCanvasSize();
@@ -42,30 +42,30 @@ var tiledSurface = {
         this.canvas.on('touchstart', this.draw);
         this.canvas.on('touchmove', this.draw);
         this.canvas.on('touchend', this.draw);
-        
+
         // add mousemove listeners
-		this.canvas.on('mousedown', this.draw);
-		this.canvas.on('mousemove', this.draw);
-		this.canvas.on('mouseup', this.draw);
+        this.canvas.on('mousedown', this.draw);
+        this.canvas.on('mousemove', this.draw);
+        this.canvas.on('mouseup', this.draw);
     },
 
     /**
-     * Gets called on window.resize.
-     */
-    adjustCanvasSize : function() {
+    * Gets called on window.resize.
+    */
+    adjustCanvasSize: function () {
         console.log("changing canvas size");
 
         // send resize message if tile is connected
         if (tiledSurface.connected == true) {
-        	
-        	var payloadResize = {};
-        	payloadResize.width = $(window).width().toString();
-        	payloadResize.height = $(window).height().toString();
-        	
-        	var ev = eventService.createWebinosEvent();
-    		ev.type = "eu.istvank.tiledsurface.webinos.resize";
-    		ev.payload = JSON.stringify(payloadResize);
-    		ev.dispatchWebinosEvent(callback);
+
+            var payloadResize = {};
+            payloadResize.width = $(window).width().toString();
+            payloadResize.height = $(window).height().toString();
+
+            var ev = eventService.createWebinosEvent();
+            ev.type = "eu.istvank.tiledsurface.webinos.resize";
+            ev.payload = JSON.stringify(payloadResize);
+            ev.dispatchWebinosEvent(callback);
         }
 
         tiledSurface.canvas[0].width = $(window).width();
@@ -77,38 +77,38 @@ var tiledSurface = {
 
         if (tiledSurface.state < tiledSurface.Status.RUNNING) {
             $("#toolbar").position({
-                "my" : "center center",
-                "at" : "center center",
-                "of" : $("#container")
+                "my": "center center",
+                "at": "center center",
+                "of": $("#container")
             });
         } else {
             $("#toolbar").position({
-                "my" : "right top",
-                "at" : "right top",
-                "of" : $("#container")
+                "my": "right top",
+                "at": "right top",
+                "of": $("#container")
             });
         }
     },
 
     /**
-     * Logs out of the XMPP network.
-     */
-    disconnect : function() {
+    * Logs out of the XMPP network.
+    */
+    disconnect: function () {
         //TODO: eventService.removeWebinosEventListener(listenerID);
 
         tiledSurface.setState(tiledSurface.Status.LOGIN);
     },
 
     /**
-     * Resets the configuration of the tiles and shows the pairing mode.
-     */
-    resetConfiguration : function() {
+    * Resets the configuration of the tiles and shows the pairing mode.
+    */
+    resetConfiguration: function () {
         // send out reset messages to all tiles
         var ev = eventService.createWebinosEvent();
-    	ev.type = "eu.istvank.tiledsurface.webinos.reset";
-    	ev.dispatchWebinosEvent(callback);
-    		
-    	console.log("sent reset msg");
+        ev.type = "eu.istvank.tiledsurface.webinos.reset";
+        ev.dispatchWebinosEvent(callback);
+
+        console.log("sent reset msg");
 
         tiledSurface.tileStrokes = [];
         tiledSurface.tileConfiguration = {};
@@ -117,87 +117,87 @@ var tiledSurface = {
     },
 
     /**
-     * The drawer object contains methods for the different touch events on the canvas.
-     * Draws a line on the canvas.
-     */
-    drawer : {
-        isDrawing : false,
-        firstCoors : null,
-        lastCoors : null,
-        touchstart : function(context, coors) {
+    * The drawer object contains methods for the different touch events on the canvas.
+    * Draws a line on the canvas.
+    */
+    drawer: {
+        isDrawing: false,
+        firstCoors: null,
+        lastCoors: null,
+        touchstart: function (context, coors) {
             context.beginPath();
             context.moveTo(coors.x, coors.y);
             firstCoors = coors;
             this.isDrawing = true;
         },
-        touchmove : function(context, coors) {
+        touchmove: function (context, coors) {
             if (this.isDrawing) {
                 context.lineTo(coors.x, coors.y);
                 context.stroke();
                 lastCoors = coors;
             }
         },
-        touchend : function(context) {
+        touchend: function (context) {
             this.isDrawing = false;
             tiledSurface.onStrokeDrawn(firstCoors, lastCoors);
         },
         // for mouse events
-		mousedown : function(context, coors) {
-			context.beginPath();
-			context.moveTo(coors.x, coors.y);
-			firstCoors = coors;
-			this.isDrawing = true;
-		},
-		mousemove : function(context, coors) {
-			if (this.isDrawing) {
-				context.lineTo(coors.x, coors.y);
-				context.stroke();
-				lastCoors = coors;
-			}
-		},
-		mouseup : function(context) {
-			this.isDrawing = false;
-			tiledSurface.onStrokeDrawn(firstCoors, lastCoors);
-		}
+        mousedown: function (context, coors) {
+            context.beginPath();
+            context.moveTo(coors.x, coors.y);
+            firstCoors = coors;
+            this.isDrawing = true;
+        },
+        mousemove: function (context, coors) {
+            if (this.isDrawing) {
+                context.lineTo(coors.x, coors.y);
+                context.stroke();
+                lastCoors = coors;
+            }
+        },
+        mouseup: function (context) {
+            this.isDrawing = false;
+            tiledSurface.onStrokeDrawn(firstCoors, lastCoors);
+        }
     },
 
     /**
-     * Called when a touch event has occured on the canvas. Call the "drawer" method
-     * that actually draws a line on the canvas.
-     */
-    draw : function(event) {
-		var e = event.originalEvent;
-		var isTouchSupported = 'ontouchstart' in window.document;
+    * Called when a touch event has occured on the canvas. Call the "drawer" method
+    * that actually draws a line on the canvas.
+    */
+    draw: function (event) {
+        var e = event.originalEvent;
+        var isTouchSupported = 'ontouchstart' in window.document;
 
-		if (isTouchSupported) {
-			// get the touch coordinates
-			if (e.type != "touchend") {
-				var coors = {
-					x : e.targetTouches[0].pageX,
-					y : e.targetTouches[0].pageY
-				};
-				e.preventDefault();
-			}
-		} else {
-			// get the mouse coordinates
-			if (e.type != "mouseup") {
-				var coors = {
-					x : e.pageX,
-					y : e.pageY
-				};
-				e.preventDefault();
-			}
-		}
-		// pass the coordinates to the appropriate handler
-		tiledSurface.drawer[e.type](tiledSurface.drawContext, coors);
-	},
+        if (isTouchSupported) {
+            // get the touch coordinates
+            if (e.type != "touchend") {
+                var coors = {
+                    x: e.targetTouches[0].pageX,
+                    y: e.targetTouches[0].pageY
+                };
+                e.preventDefault();
+            }
+        } else {
+            // get the mouse coordinates
+            if (e.type != "mouseup") {
+                var coors = {
+                    x: e.pageX,
+                    y: e.pageY
+                };
+                e.preventDefault();
+            }
+        }
+        // pass the coordinates to the appropriate handler
+        tiledSurface.drawer[e.type](tiledSurface.drawContext, coors);
+    },
 
     /**
-     * Adds handlers to the XMPP connection to listen to incoming stanzas.
-     */
-    addHandlers : function() {
+    * Adds handlers to the XMPP connection to listen to incoming stanzas.
+    */
+    addHandlers: function () {
         console.log("adding handlers");
-        
+
         eventService.addWebinosEventListener(tiledSurface.onReceiveStrokeMsg, "eu.istvank.tiledsurface.webinos.stroke");
         eventService.addWebinosEventListener(tiledSurface.onReceiveConfigMsg, "eu.istvank.tiledsurface.webinos.config");
         eventService.addWebinosEventListener(tiledSurface.onReceiveResetMsg, "eu.istvank.tiledsurface.webinos.reset");
@@ -206,9 +206,9 @@ var tiledSurface = {
     },
 
     /**
-     * Changes from one state to another.
-     */
-    setState : function(newState) {
+    * Changes from one state to another.
+    */
+    setState: function (newState) {
         switch (newState) {
             case tiledSurface.Status.ERROR:
                 break;
@@ -230,23 +230,23 @@ var tiledSurface = {
 
                 // move toolbar to center
                 $("#toolbar").position({
-                    "my" : "center center",
-                    "at" : "center center",
-                    "of" : $("#container")
+                    "my": "center center",
+                    "at": "center center",
+                    "of": $("#container")
                 });
                 break;
             case tiledSurface.Status.RECONFIGURING:
                 $("#tile_content").fadeOut(1000);
                 $("#toolbar_channel").fadeOut(1000);
                 $("#pairing_canvas").fadeIn(1000);
-                
+
                 // move toolbar to center
                 $("#toolbar").position({
-                    "my" : "center center",
-                    "at" : "center center",
-                    "of" : $("#container")
+                    "my": "center center",
+                    "at": "center center",
+                    "of": $("#container")
                 });
-                
+
                 break;
             case tiledSurface.Status.RUNNING:
                 // disable the drawing canvas
@@ -258,16 +258,16 @@ var tiledSurface = {
 
                 // move toolbar to top right
                 $("#toolbar").position({
-                    "my" : "right top",
-                    "at" : "right top",
-                    "of" : $("#container")
+                    "my": "right top",
+                    "at": "right top",
+                    "of": $("#container")
                 });
-                
+
                 $("#toolbar_channel").position({
-        			"my" : "left top",
-        			"at" : "left top",
-        			"of" : $("body")
-    			});
+                    "my": "left top",
+                    "at": "left top",
+                    "of": $("body")
+                });
 
                 //// load iframe
                 //$("#channel_iframe").attr("src", "channelimage.html");
@@ -280,16 +280,17 @@ var tiledSurface = {
     },
 
     /**
-     * Shows the login dialog.
-     */
-    showLoginDialog : function() {
+    * Shows the login dialog.
+    */
+    showLoginDialog: function () {
         $("#login_dialog").dialog({
-            autoOpen : true,
-            draggable : true,
-            modal : true,
-            title : "Connect to the server",
-            buttons : {
-                "Bind" : function() {
+            autoOpen: true,
+            draggable: true,
+            modal: true,
+            title: "Connect to the server",
+            buttons: {
+                "Select server": openDashboard,
+                "Bind": function () {
                     find();
 
                     $(this).dialog("close");
@@ -299,12 +300,12 @@ var tiledSurface = {
     },
 
     /**
-     * Sends the normalized edge coordinates to all tiles.
-     * Called when a stroke was drawn.
-     * @param {Object} lastCoors the coordinates of the first touch
-     * @param {Object} lastCoors the coordinates of the last touch
-     */
-    onStrokeDrawn : function(firstCoors, lastCoors) {
+    * Sends the normalized edge coordinates to all tiles.
+    * Called when a stroke was drawn.
+    * @param {Object} lastCoors the coordinates of the first touch
+    * @param {Object} lastCoors the coordinates of the last touch
+    */
+    onStrokeDrawn: function (firstCoors, lastCoors) {
         var x, y, direction;
 
         if (Math.abs(lastCoors.x - firstCoors.x) < (Math.abs(lastCoors.y - firstCoors.y))) {
@@ -330,14 +331,14 @@ var tiledSurface = {
                 x = $(window).width();
             }
         }
-        
+
         var payloadStroke = {};
         payloadStroke.width = $(window).width().toString();
         payloadStroke.height = $(window).height().toString();
         payloadStroke.direction = direction;
         payloadStroke.coordx = x.toString();
         payloadStroke.coordy = y.toString();
-        
+
         // set border values
         //TODO: calculate real borders
         payloadStroke.borderLeft = "110";
@@ -345,20 +346,20 @@ var tiledSurface = {
         payloadStroke.borderTop = "90";
         payloadStroke.borderBottom = "90";
 
-		var ev = eventService.createWebinosEvent();
-    	ev.type = "eu.istvank.tiledsurface.webinos.stroke";
-    	ev.payload = JSON.stringify(payloadStroke);
-    	ev.dispatchWebinosEvent(callback);
+        var ev = eventService.createWebinosEvent();
+        ev.type = "eu.istvank.tiledsurface.webinos.stroke";
+        ev.payload = JSON.stringify(payloadStroke);
+        ev.dispatchWebinosEvent(callback);
     },
 
     /**
-     * Analyzes an incoming stroke message and saves its data to the config array.
-     */
-    onReceiveStrokeMsg : function(msg) {
+    * Analyzes an incoming stroke message and saves its data to the config array.
+    */
+    onReceiveStrokeMsg: function (msg) {
         console.log("received stroke msg");
-        
+
         var event = JSON.parse(msg.payload);
-        
+
         var tileConfig = {};
         tileConfig.jid = msg.addressing.source.id;
         tileConfig.width = parseInt(event.width);
@@ -383,12 +384,12 @@ var tiledSurface = {
     },
 
     /**
-     * Saves the incoming configuration and disables the canvas.
-     */
-    onReceiveConfigMsg : function(msg) {
-    	
-    	var event = JSON.parse(msg.payload);
-    	
+    * Saves the incoming configuration and disables the canvas.
+    */
+    onReceiveConfigMsg: function (msg) {
+
+        var event = JSON.parse(msg.payload);
+
         // save config values
         tiledSurface.globalWidth = parseInt(event.globalWidth);
         tiledSurface.globalHeight = parseInt(event.globalHeight);
@@ -403,56 +404,56 @@ var tiledSurface = {
     },
 
     /**
-     * Resets the tile configuration for all tiles.
-     */
-    onReceiveResetMsg : function(msg) {
+    * Resets the tile configuration for all tiles.
+    */
+    onReceiveResetMsg: function (msg) {
         tiledSurface.resetConfiguration();
 
         return true;
     },
-    
+
     /**
-     * Resets the tile configuration of a single tile. Received by the master tile,
-     * deletes the configuration of the sending tile and sends reconfig messages to
-     * all tiles.
-     */
-    onReceiveReconfigTileMsg: function(msg) {
-        $.each(tiledSurface.tileConfiguration, function(key, value) {
-        	// key is the recipient
-        	var ev = eventService.createWebinosEvent();
-        	ev.addressing = {};
-        	var webinosAddressings = [];
-        	webinosAddressings[0] = {};
-        	webinosAddressings[0].id = key;
-        	ev.addressing.to = webinosAddressings;
-			ev.type = "eu.istvank.tiledsurface.webinos.reconfig";
-			ev.dispatchWebinosEvent(callback);
+    * Resets the tile configuration of a single tile. Received by the master tile,
+    * deletes the configuration of the sending tile and sends reconfig messages to
+    * all tiles.
+    */
+    onReceiveReconfigTileMsg: function (msg) {
+        $.each(tiledSurface.tileConfiguration, function (key, value) {
+            // key is the recipient
+            var ev = eventService.createWebinosEvent();
+            ev.addressing = {};
+            var webinosAddressings = [];
+            webinosAddressings[0] = {};
+            webinosAddressings[0].id = key;
+            ev.addressing.to = webinosAddressings;
+            ev.type = "eu.istvank.tiledsurface.webinos.reconfig";
+            ev.dispatchWebinosEvent(callback);
 
             console.log("sent reconfig msg to " + key);
         });
 
         tiledSurface.tileConfiguration[eventService.myAppID] = null;
         tiledSurface.tileStrokes = [];
-        
-        return true;
-    },
-    
-    /**
-     * Shows the drawing canvas.
-     */
-    onReceiveReconfigMsg: function(msg) {
-        tiledSurface.setState(tiledSurface.Status.RECONFIGURING);
-        
+
         return true;
     },
 
     /**
-     * Goes through the list of saved tile configurations and links them.
-     */
-    matchTiles : function() {
+    * Shows the drawing canvas.
+    */
+    onReceiveReconfigMsg: function (msg) {
+        tiledSurface.setState(tiledSurface.Status.RECONFIGURING);
+
+        return true;
+    },
+
+    /**
+    * Goes through the list of saved tile configurations and links them.
+    */
+    matchTiles: function () {
         console.log("matchTiles");
         // run through tile configurations
-        $.each(tiledSurface.tileStrokes, function(keyFirst, valueFirst) {
+        $.each(tiledSurface.tileStrokes, function (keyFirst, valueFirst) {
             // run through the rest of the array to find matches
             for (var i = (keyFirst + 1); i < tiledSurface.tileStrokes.length; i++) {
                 // check if the two strokes originate from the same device
@@ -497,9 +498,9 @@ var tiledSurface = {
     },
 
     /**
-     * Calculates the global coordinates of two tiles by their strokes.
-     */
-    arrangeTiles : function(strokeOne, strokeTwo) {
+    * Calculates the global coordinates of two tiles by their strokes.
+    */
+    arrangeTiles: function (strokeOne, strokeTwo) {
         var tileConfigOne = tiledSurface.tileConfiguration[strokeOne.jid];
         var tileConfigTwo = tiledSurface.tileConfiguration[strokeTwo.jid];
         if ((tileConfigOne != null) && (tileConfigTwo != null)) {
@@ -571,12 +572,12 @@ var tiledSurface = {
     },
 
     /**
-     * Takes the list of tile configurations and calculates the global origin.
-     */
-    calculateGlobalOrigin : function() {
+    * Takes the list of tile configurations and calculates the global origin.
+    */
+    calculateGlobalOrigin: function () {
         // start with 0, as the first tile was initialized with 0.
         var left = 0, top = 0, right = 0, bottom = 0;
-        $.each(tiledSurface.tileConfiguration, function(key, value) {
+        $.each(tiledSurface.tileConfiguration, function (key, value) {
             if (value.globalX < left) {
                 left = value.globalX;
             }
@@ -599,11 +600,11 @@ var tiledSurface = {
     },
 
     /**
-     * Takes the global origin, sets it to 0,0 and calculates the tile configurations
-     * accordingly.
-     */
-    normalizeGlobalCoords : function() {
-        $.each(tiledSurface.tileConfiguration, function(key, value) {
+    * Takes the global origin, sets it to 0,0 and calculates the tile configurations
+    * accordingly.
+    */
+    normalizeGlobalCoords: function () {
+        $.each(tiledSurface.tileConfiguration, function (key, value) {
             value.globalX -= tiledSurface.globalCenterX;
             value.globalY -= tiledSurface.globalCenterY;
         });
@@ -613,87 +614,87 @@ var tiledSurface = {
     },
 
     /**
-     * Sends out messages to the tiles including their global configuration to start the actual
-     * content.
-     */
-    startContent : function() {
+    * Sends out messages to the tiles including their global configuration to start the actual
+    * content.
+    */
+    startContent: function () {
         console.log("starting");
         tiledSurface.calculateGlobalOrigin();
         tiledSurface.normalizeGlobalCoords();
 
         // send out messages to all tiles
-        $.each(tiledSurface.tileConfiguration, function(key, value) {
-        	// key is the recipient
-        	
-        	var payloadConfig = {};
-        	payloadConfig.globalWidth = tiledSurface.globalWidth.toString();
-        	payloadConfig.globalHeight = tiledSurface.globalHeight.toString();
-        	payloadConfig.globalCenterX = tiledSurface.globalCenterX.toString();
-        	payloadConfig.globalCenterY = tiledSurface.globalCenterY.toString();
-        	payloadConfig.tileX = value.globalX.toString();
-        	payloadConfig.tileY = value.globalY.toString();
-        	
-        	var ev = eventService.createWebinosEvent();
-        	ev.addressing = {};
-        	var webinosAddressings = [];
-        	webinosAddressings[0] = {};
-        	webinosAddressings[0].id = key;
-        	ev.addressing.to = webinosAddressings;
-    		ev.type = "eu.istvank.tiledsurface.webinos.config";
-    		ev.payload = JSON.stringify(payloadConfig);
-    		ev.dispatchWebinosEvent(callback);
+        $.each(tiledSurface.tileConfiguration, function (key, value) {
+            // key is the recipient
+
+            var payloadConfig = {};
+            payloadConfig.globalWidth = tiledSurface.globalWidth.toString();
+            payloadConfig.globalHeight = tiledSurface.globalHeight.toString();
+            payloadConfig.globalCenterX = tiledSurface.globalCenterX.toString();
+            payloadConfig.globalCenterY = tiledSurface.globalCenterY.toString();
+            payloadConfig.tileX = value.globalX.toString();
+            payloadConfig.tileY = value.globalY.toString();
+
+            var ev = eventService.createWebinosEvent();
+            ev.addressing = {};
+            var webinosAddressings = [];
+            webinosAddressings[0] = {};
+            webinosAddressings[0].id = key;
+            ev.addressing.to = webinosAddressings;
+            ev.type = "eu.istvank.tiledsurface.webinos.config";
+            ev.payload = JSON.stringify(payloadConfig);
+            ev.dispatchWebinosEvent(callback);
         });
-        
+
         // configure image channel
         var payloadImage = {};
-    	payloadImage.uri = "img/drshin.jpg";
-    	payloadImage.globalx = "-1000";
-    	payloadImage.globaly = "-1000";
+        payloadImage.uri = "img/drshin.jpg";
+        payloadImage.globalx = "-1000";
+        payloadImage.globaly = "-1000";
 
-		var ev = eventService.createWebinosEvent();
-    	ev.type = "eu.istvank.tiledsurface.webinos.channelimage";
-    	ev.payload = JSON.stringify(payloadImage);
-    	ev.dispatchWebinosEvent(callback);
+        var ev = eventService.createWebinosEvent();
+        ev.type = "eu.istvank.tiledsurface.webinos.channelimage";
+        ev.payload = JSON.stringify(payloadImage);
+        ev.dispatchWebinosEvent(callback);
     },
 
     /**
-     * Gets the local coords to global coords depending on the global center.
-     * @param {Object} tileOrigin the coordinates of the tile in the global coordinate system
-     * @param {Object} globalCoords the global coordinates to find the local coordinates to
-     * @return {Object} the local coordinates of the global coordinates supplied
-     */
-    getLocalCoords : function(tileOrigin, globalCoords) {
+    * Gets the local coords to global coords depending on the global center.
+    * @param {Object} tileOrigin the coordinates of the tile in the global coordinate system
+    * @param {Object} globalCoords the global coordinates to find the local coordinates to
+    * @return {Object} the local coordinates of the global coordinates supplied
+    */
+    getLocalCoords: function (tileOrigin, globalCoords) {
         var coords = {
-            "x" : (globalCoords.x - tileOrigin.x),
-            "y" : (globalCoords.y - tileOrigin.y)
+            "x": (globalCoords.x - tileOrigin.x),
+            "y": (globalCoords.y - tileOrigin.y)
         };
         return coords;
     },
-    
+
     /**
-     * Gets the global coords to local coords depending on the global center.
-     * @param {Object} tileOrigin the coordinates of the tile in the global coordinate system
-     * @param {Object} localCoords the local coordinates to find the global coordinates to
-     * @return {Object} the global coordinates of the local coordinates supplied
-     */
-    getGlobalCoords: function(tileOrigin, localCoords) {
+    * Gets the global coords to local coords depending on the global center.
+    * @param {Object} tileOrigin the coordinates of the tile in the global coordinate system
+    * @param {Object} localCoords the local coordinates to find the global coordinates to
+    * @return {Object} the global coordinates of the local coordinates supplied
+    */
+    getGlobalCoords: function (tileOrigin, localCoords) {
         var coords = {
             "x": (localCoords.x + tileOrigin.x),
             "y": (localCoords.y + tileOrigin.y)
         };
         return coords;
     },
-    
+
     /**
-     * Sends a message to the master tile with the wish to reposition this single tile.
-     */
-    reconfig: function() {
-    	var ev = eventService.createWebinosEvent();
-    	ev.type = "eu.istvank.tiledsurface.webinos.reconfigtile";
-    	ev.dispatchWebinosEvent(callback);
+    * Sends a message to the master tile with the wish to reposition this single tile.
+    */
+    reconfig: function () {
+        var ev = eventService.createWebinosEvent();
+        ev.type = "eu.istvank.tiledsurface.webinos.reconfigtile";
+        ev.dispatchWebinosEvent(callback);
 
         console.log("sent reconfigure msg");
-        
+
         // clear canvas
         tiledSurface.adjustCanvasSize();
     }
