@@ -297,6 +297,7 @@ var tiledSurface = {
 			modal : true,
 			title : "Connect to PZP",
 			buttons : {
+				"Select server": openDashboard,
 				"Bind" : function() {
 					find();
 
@@ -304,6 +305,9 @@ var tiledSurface = {
 				}
 			}
 		});
+		if (typeof localStorage != "undefined" && localStorage.getItem("eventsApi_zoneId") != null) {
+            $("#selectedServer").text("Current selection: " + localStorage.getItem("app2appApi_zoneId") + ")");
+        }
 	},
 
 	/**

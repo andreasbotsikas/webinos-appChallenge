@@ -18,10 +18,10 @@ var channelMaps = {
 			webinos.discovery.findServices(new ServiceType('http://www.w3.org/ns/api-perms/geolocation'), {
 				onFound : this.onWebinosServiceFound
 			});
-
+			// Start from FhG
 			var mapOptions = {
 				zoom : 15,
-				center : new google.maps.LatLng(0.0, 0.0),
+				center : new google.maps.LatLng(52.525843,13.313584),
 				mapTypeId : google.maps.MapTypeId.ROADMAP
 			};
 			this.map = new google.maps.Map($("#map_canvas")[0], mapOptions);
