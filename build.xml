@@ -9,7 +9,8 @@
                                 **/*.iml
 								**/Readme.md
 								**/*.psd
-								**/*.bak" />
+								**/*.bak
+								**/*.mp4" />
                 </zip>
         </target>
 
