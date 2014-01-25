@@ -65,17 +65,23 @@ function bind(service) {
 }
 
  function openDashboard() {
-    once = false; // Reset the once to be able to rebind to new service (although events will be coming from the previous source too
-    webinos.dashboard.open({
-        module: 'explorer',
-        data: {
-            service: ['http://webinos.org/api/events'],
-            select: "devices"
-        }
-    }).onAction(function (data) {
-        if (typeof localStorage != "undefined" && data.result.length == 1) {
-            localStorage.setItem("eventsApi_zoneId", data.result[0].id);
-            $("#selectedServer").text("Current selection: " + data.result[0].id + ")");
-        }
-    });
- }
+     once = false; // Reset the once to be able to rebind to new service (although events will be coming from the previous source too
+     $("#selectedServer").text("");
+     if (typeof localStorage != "undefined") {
+         localStorage.removeItem("eventsApi_zoneId");
+         webinos.dashboard.open({
+             module: 'explorer',
+             data: {
+                 service: ['http://webinos.org/api/events'],
+                 select: "devices"
+             }
+         }).onAction(function (data) {
+             if (typeof localStorage != "undefined" && data.result.length == 1) {
+                 localStorage.setItem("eventsApi_zoneId", data.result[0].id);
+                 $("#selectedServer").text("Current selection: " + data.result[0].id + ")");
+             }
+         });
+     } else {
+         $("#selectedServer").text("Your renderer doesn't support localstorage!");
+     }
+}
