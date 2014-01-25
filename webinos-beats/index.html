@@ -12,7 +12,7 @@
             <tr>
                 <td>Webinos Players</td>
                 <td>
-                    <button id="findService" class="button" style="width:120px">Playing with...</button>
+                    <button id="findService" class="button" style="width:120px">Playing with...</button><button id="cmdSelectEvents" class="button" style="width:120px;margin-left:20px">Switch server</button><span id="selectedServer"></span>
                     <br/>
                     <select id="playersList" width="500" style="width: 500px; background-color:#505050; overflow:hidden; color:white" size="5"></select>
                 </td>
@@ -44,11 +44,11 @@ $(function() {
 //    hat = new Channel(new Sample("http://daimi.au.dk/~pmn/spf02/CDROM/pr4/sound/amp300_16bit_mono/hihat/hihat_closed_1_5.wav"));
 
 
-    kick = new Channel(new Sample("samples/bass6_5.mp4"));
+    kick = new Channel(new Sample("samples/bass6_5.wav"));
 
-    snare = new Channel(new Sample("samples/rimsnare_12.mp4"));
+    snare = new Channel(new Sample("samples/rimsnare_12.wav"));
 
-    hat = new Channel(new Sample("samples/hihat_closed_1_5.mp4"));
+    hat = new Channel(new Sample("samples/hihat_closed_1_5.wav"));
 
 
 
