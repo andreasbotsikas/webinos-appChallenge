@@ -78,7 +78,7 @@ function bind(service) {
          }).onAction(function (data) {
              if (typeof localStorage != "undefined" && data.result.length == 1) {
                  localStorage.setItem("eventsApi_zoneId", data.result[0].id);
-                 $("#selectedServer").text("Current selection: " + data.result[0].id + ")");
+                 $("#selectedServer").text("Current selection: " + data.result[0].id);
              }
          });
      } else {

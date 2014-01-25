@@ -298,7 +298,7 @@ var tiledSurface = {
             }
         });
         if (typeof localStorage != "undefined" && localStorage.getItem("eventsApi_zoneId") != null) {
-            $("#selectedServer").text("Current selection: " + localStorage.getItem("app2appApi_zoneId") + ")");
+            $("#selectedServer").text("Current selection: " + localStorage.getItem("eventsApi_zoneId"));
         }
     },
 
