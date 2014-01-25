@@ -28,7 +28,7 @@ function find() {
     var zoneId;
     if (typeof localStorage != "undefined" && localStorage.getItem("eventsApi_zoneId") != null) {
         zoneId = {
-            zoneId: [localStorage.getItem("app2appApi_zoneId")]
+            zoneId: [localStorage.getItem("eventsApi_zoneId")]
         };
     }
 	webinos.discovery.findServices(new ServiceType("http://webinos.org/api/events"), {
