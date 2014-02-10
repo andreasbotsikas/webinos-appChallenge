@@ -163,67 +163,71 @@ webinosConnector = function (applicationName) {
         hello: preventCollision('_hello_')
     };
 
-    var currentEventsApiZoneId = null;
     this.getEventsZone = function () {
-        return currentEventsApiZoneId;
+		if (typeof localStorage != "undefined"  && localStorage.getItem("eventsApi_zoneId") != null) {
+            return localStorage.getItem("eventsApi_zoneId");
+        }else{
+			return "none";
+		}
     }
+	
+	var triggerDashboard = function(){
+		webinos.dashboard.open({
+			module: 'explorer',
+			data: {
+				service: ['http://webinos.org/api/events'],
+				select: "devices"
+			}
+		}).onAction(function (data) {
+			if (typeof localStorage != "undefined" && data.result.length == 1) {
+				localStorage.setItem("eventsApi_zoneId", data.result[0].id);
+				$("#SelectedEventServer").text(data.result[0].id);
+			}
+			currentEventsApiZoneId = data.result[0].id;
+			findEventsAPI();
+		});
+	}
+	
     this.promptForEvents = function () {
-        currentEventsApiZoneId = null;
         if (typeof localStorage != "undefined") {
             localStorage.removeItem("eventsApi_zoneId");
         }
-        findEventsAPI();
+        triggerDashboard();
     };
     var findEventsAPI = function () {
-        if (currentEventsApiZoneId != null || (typeof localStorage != "undefined" && localStorage.getItem("eventsApi_zoneId") != null)) {
-            if (typeof localStorage != "undefined") {
-                currentEventsApiZoneId = localStorage.getItem("eventsApi_zoneId");
-            }
-            webinos.ServiceDiscovery.findServices(
-                new ServiceType('http://webinos.org/api/events'),
-                {
-                    onFound: function (service) {
-                        service.bind({
-                            onBind: function (service) {
-                                connectorServices.events.service = service;
-                                if (connectorServices.events.listenerId != null) {
-                                    service.removeWebinosEventListener(connectorServices.events.listenerId);
-                                }
-                                connectorServices.events.listenerId = connectorServices.events.service.addWebinosEventListener(eventReceived);
-                                if (that.getState() != that.STATE.PZH_ONLINE) {
-                                    setState(that.STATE.PZH_ONLINE);
-                                    hello();
-                                }
-                                triggerEvent("eventsBound", service);
-                            }
-                        });
-                    },
-                    onError: function (error) {
-                        setState(that.STATE.ERROR);
-                        connectorServices.events = null;
-                    }
-                },
-                {},
-                {
-                    zoneId: [currentEventsApiZoneId]
-                }
-             );
-        } else { // Prompt dashboard to select events api
-            webinos.dashboard.open({
-                module: 'explorer',
-                data: {
-                    service: ['http://webinos.org/api/events'],
-                    select: "devices"
-                }
-            }).onAction(function (data) {
-                if (typeof localStorage != "undefined" && data.result.length == 1) {
-                    localStorage.setItem("eventsApi_zoneId", data.result[0].id);
-                }
-                currentEventsApiZoneId = data.result[0].id;
-                findEventsAPI();
-            });
-
-        }
+		var zoneId;
+		if (typeof localStorage != "undefined" && localStorage.getItem("eventsApi_zoneId") != null) {
+			zoneId = {
+				zoneId: [localStorage.getItem("eventsApi_zoneId")]
+			};
+		}
+		webinos.ServiceDiscovery.findServices(
+			new ServiceType('http://webinos.org/api/events'),
+			{
+				onFound: function (service) {
+					service.bind({
+						onBind: function (service) {
+							connectorServices.events.service = service;
+							if (connectorServices.events.listenerId != null) {
+								service.removeWebinosEventListener(connectorServices.events.listenerId);
+							}
+							connectorServices.events.listenerId = connectorServices.events.service.addWebinosEventListener(eventReceived);
+							if (that.getState() != that.STATE.PZH_ONLINE) {
+								setState(that.STATE.PZH_ONLINE);
+								hello();
+							}
+							triggerEvent("eventsBound", service);
+						}
+					});
+				},
+				onError: function (error) {
+					setState(that.STATE.ERROR);
+					connectorServices.events = null;
+				}
+			},
+			{},
+			zoneId
+		);
     };
 
     setState(that.STATE.INIT);
